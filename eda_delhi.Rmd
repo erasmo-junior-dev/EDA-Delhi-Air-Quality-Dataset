@@ -1,0 +1,66 @@
+---
+title: "delhi_eda"
+output: pdf_document
+date: "2025-08-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# DELHI AIR QUALITY DATASET
+
+## IMPORTANDO BIBLIOTECAS
+  - `writexl`: Exporta o dataframe para .xlxs.
+
+```{r import librarys}
+library(writexl)
+```
+
+## IMPORTANDO O DATASET
+
+```{r import dataset}
+df <- read.csv("data/final_dataset.csv")
+```
+
+## DICIONÁRIO
+
+## TIPOS DAS VÁRIAVEIS
+
+## EXPORTANDO PARA .XLXS
+```{r export dataframe}
+if (!dir.exists("output"))
+{
+  dir.create("output")
+}
+writexl::write_xlsx(df, "output/eda_delhi.xlsx")
+```
+
+## FUNÇÕES BÁSICAS [//]: #(não pensei em um nome melhor)
+
+Vamos observar o comportamento do nível de Dioxido de Carbono no ar (CO). Primeiramente, selecionamos a coluna.
+
+```{r select column}
+CO_cl <- df$CO
+```
+
+Em seguida, vamos calcular o menor valor, maior valor, devio padrão e os quartis.
+
+```{r basic functions}
+min(CO_cl)
+max(CO_cl)
+median(CO_cl)
+mean(CO_cl)
+sd(CO_cl)
+quantile(CO_cl)
+```
+
+##
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
