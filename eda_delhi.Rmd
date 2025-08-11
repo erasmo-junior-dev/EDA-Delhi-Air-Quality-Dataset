@@ -36,9 +36,11 @@ if (!dir.exists("output"))
 writexl::write_xlsx(df, "output/eda_delhi.xlsx")
 ```
 
-## FUNÇÕES BÁSICAS [//]: #(não pensei em um nome melhor)
+## ANALISANDO A COLUNA DE MONOXIDO DE CARBONO
 
-Vamos observar o comportamento do nível de Dioxido de Carbono no ar (CO). Primeiramente, selecionamos a coluna.
+Vamos observar o comportamento do nível de Monoxido de Carbono no ar (CO). Primeiramente, selecionamos a coluna.
+
+### ATRIBUTOS BÁSICOS [//]: #(não pensei em um nome melhor)
 
 ```{r select column}
 CO_cl <- df$CO
@@ -55,7 +57,12 @@ sd(CO_cl)
 quantile(CO_cl)
 ```
 
-##
+### GRÁFICOS: Histograma e Boxplot
+
+```{r, CO boxplot, histogram, echo=FALSE}
+boxplot(CO_cl)
+hist(CO_cl)
+```
 
 ## Including Plots
 
