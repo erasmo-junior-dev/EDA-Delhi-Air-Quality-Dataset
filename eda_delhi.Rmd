@@ -170,16 +170,54 @@ Algumas relações claras podem ser vistas, como por exemplo de particulas finas
 
 ### Pergunta 1: Em quais anos a Índia teve os piores índices de qualidade do ar? Existe algum fator externo que justifique isso?
 
-``` {r AQI by Year}
-df$Year <- as.factor(df$Year)
+A capital da Índia é considerada, desde 2019, a capital com o ar mais poluído do mundo, uma das possíveis causas é a alta densidade demográfica, as queimadas (stubble burning), a alta circulação de veículos, alta emissão de fumaça das indústrias e inversão termica no inverno.
 
-barplot(df$AQI ~ df$Year, col="darkblue")
+``` {r, AQI by Year}
+media_por_ano <- tapply(df$AQI, df$Year, mean)
+barplot(media_por_ano, col = "darkblue", xlab = "Ano", ylab = "AQI médio")
 ```
 
 
 
 ### Pergunta 2: Existe alguma relação entre particulas finas de 2.5 e de 10?
 
-### Pergunta 3: A Índia na COP de 2021, prometeu diminui sua emissão de CO, ela cumpriu?
+- Correlação
+```{r, correlaction PM2.5 and PM10}
+cor(df$CO, df$AQI)
+```
 
+- Modelo Linear
+```{r, linear model}
+linear_model <- lm(AQI ~ CO, data = df)
+```
 
+- Ponto de Intercessão
+```{r, intercession}
+coef(linear_model)[1]
+```
+
+- Inclinação
+```{r, inclination}
+coef(linear_model)[2]
+```
+
+- Equação da Reta
+```{r, equation of a line}
+cat(sprintf("Equação da reta: y = %.2f + %.2fx\n", coef(linear_model)[1], coef(linear_model)[2]))
+```
+
+- Gráfico de Dispersão e Linha de Tendência
+```{r, dispersion plot and tendency line}
+plot(df$CO, df$AQI, main="Concentração de CO X AQI", col="darkblue",
+     ylab="Nível de AQI", xlab="Nível de Concenctração de CO (mg/m³)")
+
+abline(linear_model, col="red", lwd=2)
+```
+
+### Pergunta 3: A Índia na COP de 2021, prometeu diminuir sua emissão de CO, ela cumpriu?
+
+Pelo gráfico de barras, observa-se uma leve melhora a partir de 2023. Contudo, é importante acompanhar os dados dos anos seguintes para confirmar essa tendência e tirar conclusões mais sólidas.
+
+```{r, barplot AQI médio por ano}
+barplot(media_por_ano, col = "darkblue", xlab = "Ano", ylab = "AQI médio")
+```
