@@ -1,7 +1,7 @@
 ---
-title: "delhi_eda"
+title: "PROJETO AB1 - QUALIDADE DO AR EM DELHI"
 output: pdf_document
-date: "2025-08-11"
+date: "2025-08-13"
 ---
 
 ```{r setup, include=FALSE}
@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # DELHI AIR QUALITY DATASET
 
 ## IMPORTANDO BIBLIOTECAS
-  - `writexl`: Exporta o dataframe para .xlxs.
+  - `writexl`: Exporta o dataframe para .xlsx.
 
 ```{r import librarys}
 library(writexl)
@@ -20,14 +20,75 @@ library(writexl)
 ## IMPORTANDO O DATASET
 
 ```{r import dataset}
-df <- read.csv("data/final_dataset.csv")
+df <- read.csv("data/final_dataset.csv", stringsAsFactors = FALSE)
 ```
+
+## Análise Exploratória e Dados
+
+O Dataset escolhido é o "Delhi Air Quality", que possui informações sobre a composição e qualidade do ar em Delhi a capital indiana
+
+### Busca de informações no dataset
+```{r initial exploration}
+nrow(df)
+ncol(df)
+names(df)
+str(df)
+```
+
+O dataset possui 1461 ocorrências (o que equivale a 4 anos de dados todos os dias) distribuidas em 12 atributos, algumas variáveis são de datas e categorias (Date, Year, Month, Days e Holidays_Count) e as outras são medidas contínuas de poluição.
+
+### Checando se existem valores ausentes:
+```{r check NA}
+colSums(is.na(df))
+
+range(df$Month)
+range(df$Days)
+range(df$Date)
+range(df$Year)
+```
+
+Não foram encontrados valores ausentes, então não foi necessário modificar.
+
+As faixas foram corretas, temos 12 meses, 7 dias diferentes, 31 dias por mês no máximo e 4 anos (período que o dataset abrange)
+
+### Checando se existem valores impossíveis (Como números negativos):
+```{r check impossibilitys}
+range(df$PM2.5)
+range(df$PM10)
+range(df$NO2)
+range(df$SO2)
+range(df$CO)
+range(df$Ozone)
+range(df$AQI)
+```
+
+Todos os valores fazem sentido. Caso fosse encontrado algum valor que não faz sentido seria ignorado na analise o dia inteiro, para evitar erros na análise.
 
 ## DICIONÁRIO
 
+| Coluna          | Descrição                           | Unidade            |
+| --------------- | ----------------------------------- | ------------------ |
+| Date            | Dia do mês                          | número - categórico(1–31)      |
+| Month           | Mês do ano                          | número - categórico(1–12)      |
+| Year            | Ano da medição                      | número - categórico(ex.: 2021) |
+| Holidays\_Count | Nº de feriados no dia               | Valor booleano (1=Feriado, 2=Não)     |
+| Days            | Dia da semana (1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sab 7=Dom)        | categórico         |
+| PM2.5           | Partículas finas (até 2.5microm)    | microg/m³          |
+| PM10            | Partículas inaláveis (até 10microm) | microg/m³          |
+| NO2             | Dióxido de nitrogênio               | microg/m³          |
+| SO2             | Dióxido de enxofre                  | microg/m³          |
+| CO              | Monóxido de carbono                 | mg/m³              |
+| Ozone           | Ozônio                              | microg/m³          |
+| AQI             | Índice de Qualidade do Ar           | índice numérico    |
+
+
 ## TIPOS DAS VÁRIAVEIS
 
-## EXPORTANDO PARA .XLXS
+AS VARIÁVEIS: Month, Holiday_Count, Days, Date, Month, Year são todas categóricas apesar de serem vistas como números
+
+Todos os outros valores são numéricos contínuos.
+
+## EXPORTANDO PARA .XLSX
 ```{r export dataframe}
 if (!dir.exists("output"))
 {
@@ -36,19 +97,13 @@ if (!dir.exists("output"))
 writexl::write_xlsx(df, "output/eda_delhi.xlsx")
 ```
 
-## ANALISANDO A COLUNA DE MONOXIDO DE CARBONO
+## BOXPLOT E HISTOGRAMA
 
-Vamos observar o comportamento do nível de Monoxido de Carbono no ar (CO). Primeiramente, selecionamos a coluna.
+Para o boxplot pensamos em escolher a coluna AQI já que é a mais relevante da tabela, contudo, ela possuí limites bem definidos (entre 0-500), então
 
-### ATRIBUTOS BÁSICOS [//]: #(não pensei em um nome melhor)
-
-```{r select column}
-CO_cl <- df$CO
-```
-
-Em seguida, vamos calcular o menor valor, maior valor, devio padrão e os quartis.
-
+### FUNÇÕES BÁSICAS:
 ```{r basic functions}
+CO_cl = df$CO
 min(CO_cl)
 max(CO_cl)
 median(CO_cl)
@@ -57,17 +112,74 @@ sd(CO_cl)
 quantile(CO_cl)
 ```
 
-### GRÁFICOS: Histograma e Boxplot
-
-```{r, CO boxplot, histogram, echo=FALSE}
-boxplot(CO_cl)
-hist(CO_cl)
+### Plotagem
+```{r, AQI boxplot, histogram, echo=FALSE}
+boxplot(CO_cl, col = "lightblue", border = "darkblue")
+hist(CO_cl,col = "lightblue", border = "darkblue", xlab = "Concentração de CO2")
 ```
 
-## Including Plots
+O histograma mostra que normalmente o monóxido de carbono se concentra na faixa normal, com inumeras ocorrências entre 0 e 1 (ar fresco) e 1, 2 que já pode causar dor de cabeça após algumas horas.
 
-You can also embed plots, for example:
+Quando olhamos o boxplot, a situação é um pouco mais complicada, podemos perceber muitos outliers, isso ocorre primariamente pela quantidade massiva de dados dentro da tabela com grandes variações, a mediana está pouco abaixo do 1, representando que na maioria dos dias o ar está com concentrações razoáveis de monóxido de carbono, não temos outliers inferiores, o que faz sentido, afinal não é natural concentrações tão baixas de monóxido de carbono no ar, porém a parte impressionante são os outliers superiores, que em uma análise superficial representa que algo fez com que em algum periodo, ou em algum evento específico a cidade de Delhi esteve emitindo MUITO mais monóxido que o normal. Esse tópico será exibido e justificado mais a frente.
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+
+## Númerica e Categórica com Boxplot
+
+Foram escolhidos a coluna PM2.5 que representa a quantidade particulas finas no ar, uma ótima forma de analisar a qualidade e dividindo por mês pra vermos a recorrência baseado em periodos do ano.
+
+### Comparando PM2.5 mês a mês.
+``` {r PM2.5 by month}
+df$Month <- as.factor(df$Month)
+
+boxplot(PM2.5 ~ Month, data = df, main = "PM2.5 por Mês", xlab = "Mês", col = "red", horizontal = TRUE)
 ```
+
+Percebe-se que os meses de Janeiro, Novembro e Dezembro tem uma quantidade particulas finas mais alta que o normal, além dos outliers mais altos, e isso pode ser justificado com o fato de que justamente em outubro e novembro existe uma prática chamada "Stubble burning" que consiste em queimar restos de palha da colheita, principalmente de arroz, em cidades como Punjab, Haryana que são próximas de Delhi, além disso por esse período ser o inverno, e na Índia a temperatura média ficar entre 5-10°C, muito mais carvão é queimado para aquecimento doméstico. Mas um ponto que deve ser explorado é, será que esses meses são os meses com mais feriados?
+
+## Categórica x Categórica
+
+### Meses com mais e menos feriados
+```{r holydays in a month}
+feriados_por_mes <- tapply(df$Holidays_Count, df$Month, sum)
+
+media_feriados_mes <- feriados_por_mes / 4
+
+names(media_feriados_mes) <- c("Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez")
+
+barplot(media_feriados_mes, col="darkblue", xlab = "Meses", ylab = "Feriados no mês")
+```
+
+É perceptível que meses que possuem muitas particulas finas, como novembro, dezembro e janeiro não necessáriamente tem um número de feriados tão acima da média.
+
+## Matriz de correlação
+
+### Criando a matriz de correlação
+```{r correlation matrix}
+library(corrplot)
+
+num_df <- df[sapply(df, is.numeric)]
+
+mat_cor <- cor(num_df, use = "complete.obs")
+
+corrplot(mat_cor)
+```
+
+Algumas relações claras podem ser vistas, como por exemplo de particulas finas (PM2.5 e PM10) com a qualidade do ar, quanto mais particulas pior é a qualidade, assim como monóxido de carbono (CO). Também é perceptível que com os anos possuem uma baixa relação negativa com AQI, ou seja, com o tempo a qualidade do ar na Índia foi aumentando, e a concentração de ozônio diminui a concentração de outros elementos.
+
+## PERGUNTAS
+
+### Pergunta 1: Em quais anos a Índia teve os piores índices de qualidade do ar? Existe algum fator externo que justifique isso?
+
+``` {r AQI by Year}
+df$Year <- as.factor(df$Year)
+
+barplot(df$AQI ~ df$Year, col="darkblue")
+```
+
+
+
+### Pergunta 2: Existe alguma relação entre particulas finas de 2.5 e de 10?
+
+### Pergunta 3: A Índia na COP de 2021, prometeu diminui sua emissão de CO, ela cumpriu?
+
+
