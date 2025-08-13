@@ -84,9 +84,17 @@ Todos os valores fazem sentido. Caso fosse encontrado algum valor que não faz s
 
 ## TIPOS DAS VÁRIAVEIS
 
-AS VARIÁVEIS: Month, Holiday_Count, Days, Date, Month, Year são todas categóricas apesar de serem vistas como números
+AS VARIÁVEIS: Month, Holidays_Count, Days, Date, Month, Year são todas categóricas apesar de serem vistas como números
 
 Todos os outros valores são numéricos contínuos.
+
+```{r transform}
+df$Year <- as.factor(df$Year)
+df$Month <- as.factor(df$Month)
+df$Date <- as.factor(df$Date)
+df$Days <- as.factor(df$Days)
+df$Holidays_Count <- as.factor(df$Holidays_Count)
+```
 
 ## EXPORTANDO PARA .XLSX
 ```{r export dataframe}
@@ -140,6 +148,8 @@ Percebe-se que os meses de Janeiro, Novembro e Dezembro tem uma quantidade parti
 
 ### Meses com mais e menos feriados
 ```{r holydays in a month}
+df$Holidays_Count <- as.numeric(as.character(df$Holidays_Count))
+
 feriados_por_mes <- tapply(df$Holidays_Count, df$Month, sum)
 
 media_feriados_mes <- feriados_por_mes / 4
@@ -164,7 +174,7 @@ mat_cor <- cor(num_df, use = "complete.obs")
 corrplot(mat_cor)
 ```
 
-Algumas relações claras podem ser vistas, como por exemplo de particulas finas (PM2.5 e PM10) com a qualidade do ar, quanto mais particulas pior é a qualidade, assim como monóxido de carbono (CO). Também é perceptível que com os anos possuem uma baixa relação negativa com AQI, ou seja, com o tempo a qualidade do ar na Índia foi aumentando, e a concentração de ozônio diminui a concentração de outros elementos.
+Algumas relações claras podem ser vistas, como por exemplo de particulas finas (PM2.5 e PM10) com a qualidade do ar, quanto mais particulas pior é a qualidade, assim como monóxido de carbono (CO). Também é perceptível que a concentração de ozônio diminui a concentração de outros elementos.
 
 ## PERGUNTAS
 
@@ -189,33 +199,21 @@ cor(df$CO, df$AQI)
 - Modelo Linear
 ```{r, linear model}
 linear_model <- lm(AQI ~ CO, data = df)
-linear_model
-sum_linear_model <- summary(linear_model)
-print(sum_linear_model)
 ```
 
 - Ponto de Intercessão
 ```{r, intercession}
-intercession <- coef(linear_model)[1]
-intercession
+coef(linear_model)[1]
 ```
 
 - Inclinação
 ```{r, inclination}
-inclination <- coef(linear_model)[2]
-inclination
-```
-
-- R²
-```{r, r²}
-r2 <- round(sum_linear_model$r.squared, 3)
-r2
+coef(linear_model)[2]
 ```
 
 - Equação da Reta
 ```{r, equation of a line}
-equacao <- paste0("y = ", round(intercession, 2), " + ", round(inclination, 2), "x")
-equacao
+cat(sprintf("Equação da reta: y = %.2f + %.2fx\n", coef(linear_model)[1], coef(linear_model)[2]))
 ```
 
 - Gráfico de Dispersão e Linha de Tendência
@@ -224,9 +222,6 @@ plot(df$CO, df$AQI, main="Concentração de CO X AQI", col="darkblue",
      ylab="Nível de AQI", xlab="Nível de Concenctração de CO (mg/m³)")
 
 abline(linear_model, col="red", lwd=2)
-
-text(4, 80 + offset, labels = equacao, col = "black", cex = 1.1)
-text(4, 40, labels = paste0("R² = ", r2), col = "black", cex = 1.1)
 ```
 
 ### Pergunta 3: A Índia na COP de 2021, prometeu diminuir sua emissão de CO, ela cumpriu?
