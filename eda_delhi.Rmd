@@ -192,34 +192,46 @@ barplot(media_por_ano, col = "darkblue", xlab = "Ano", ylab = "AQI médio")
 ### Pergunta 2: Existe alguma relação entre particulas finas de 2.5 e de 10?
 
 - Correlação
-```{r, correlaction PM2.5 and PM10}
-cor(df$CO, df$AQI)
+```{r, correlaction PM2.5 and AQI}
+cor(df$PM2.5, df$AQI)
 ```
 
 - Modelo Linear
 ```{r, linear model}
-linear_model <- lm(AQI ~ CO, data = df)
+linear_model <- lm(AQI ~ PM2.5, data = df)
+sum_linear_model <- summary(linear_model)
+sum_linear_model
 ```
 
 - Ponto de Intercessão
 ```{r, intercession}
-coef(linear_model)[1]
+coef_intercepto <- round(coef(linear_model)[1], 2)
 ```
 
 - Inclinação
 ```{r, inclination}
-coef(linear_model)[2]
+coef_inclinacao <- round(coef(linear_model)[2], 2)
+```
+
+- R²
+```{r, r²}
+r2 <- round(sum_linear_model$r.squared, 3)
+r2
 ```
 
 - Equação da Reta
 ```{r, equation of a line}
-cat(sprintf("Equação da reta: y = %.2f + %.2fx\n", coef(linear_model)[1], coef(linear_model)[2]))
+equacao <- paste0("y = ", coef_intercepto, " + ", coef_inclinacao, "x")
+equacao
 ```
 
 - Gráfico de Dispersão e Linha de Tendência
 ```{r, dispersion plot and tendency line}
-plot(df$CO, df$AQI, main="Concentração de CO X AQI", col="darkblue",
-     ylab="Nível de AQI", xlab="Nível de Concenctração de CO (mg/m³)")
+plot(df$PM2.5, df$AQI, main="Concentração de PM2.5 X AQI", col="darkblue",
+     ylab="Nível de AQI", xlab="Nível de Concenctração de PM2.5 (µg/m³)")
+
+text(750, 80 + offset, labels = equacao, col = "black", cex = 1.1)
+text(750, 40, labels = paste0("R² = ", r2), col = "black", cex = 1.1)
 
 abline(linear_model, col="red", lwd=2)
 ```
